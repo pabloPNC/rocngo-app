@@ -1,0 +1,15 @@
+# R files
+.Rhistory
+/.Rproj.user/
+*.Rproj
+
+# vscode 
+*.code-workspace
+
+# Console utils
+r_start.bat
+
+
+# Papers
+/papers/
+
