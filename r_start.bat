@@ -1,0 +1,1 @@
+R.exe -e "shiny::runApp()"
