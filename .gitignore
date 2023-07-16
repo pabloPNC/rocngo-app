@@ -1,6 +1,6 @@
 # R files
 .Rhistory
-/.Rproj.user/
+.Rproj.user
 *.Rproj
 
 # vscode 
@@ -12,4 +12,9 @@ r_start.bat
 
 # Papers
 /papers/
+
+# git
+.git
+.gitignore
+
 
