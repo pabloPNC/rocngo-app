@@ -2,4 +2,4 @@ source("./modules/main/mainUi.R")
 source("./modules/main/mainServer.R")
 
 
-shinyApp(mainUi, mainServer)
+shinyApp(main_ui, main_server)

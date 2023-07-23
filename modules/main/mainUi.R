@@ -1,4 +1,4 @@
-library(shinyWidgets) 
+library(shinyWidgets)
 library(shinythemes)
 library(shinydashboard)
 library(shinydashboardPlus)
@@ -35,7 +35,7 @@ generalPanelContent <- list(
               choices = list.files("./data/"))
 )
 
-mainUi <- dashboardPage(
+main_ui <- dashboardPage(
   preloader = list(html = tagList(spin_1(), "Loading ..."), color = "#3c8dbc"),
   header = dashboardHeader(title = "FpAUC"),
   sidebar = dashboardSidebar(
@@ -67,11 +67,7 @@ mainUi <- dashboardPage(
                ),
       menuItem("Report", tabName = "report", icon = icon("book")),
       menuItem("About", tabName = "about", icon = icon("info"))
-    ),
-    collapsed = F,
-    minified = F
-  ), 
-  body = body,
-  controlbar = dashboardControlbar(),
+    ), collapsed = FALSE, minified = FALSE), body = body,
+    controlbar = dashboardControlbar(),
   title = "FpAUC"
 )

@@ -7,7 +7,7 @@ compareContents <- list(
           inputId = "graphicSelector",
           label = "Select plots to show",
           choices = NULL,
-          multiple = T
+          multiple = TRUE
         ),
         textInput(
             label = "Introduce plot name",
