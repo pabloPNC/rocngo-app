@@ -1,3 +1,25 @@
+# Calculate points
+pHSPEpoints <- function(roc_points, threshold) {
+  roc_points.filtered <- roc_points[roc_points[,1] >= threshold,]
+  roc_points.filtered
+}
+
+
+##########################################################
+#
+# FpAUC index: FITTED PARTIAL AREA UNDER THE ROC CURVE
+# FOR HIGH SENSITIVITY INTERVAL (TPR0, 1)
+# The FpaucHS function computes the FpAUC index
+#
+# Notation:
+# xsample = Gold standard
+# ysample = test scores
+# lower.sen = tpr0 (the minimum sensitivity required)#
+##########################################################
+##########################################################
+# CHECK THE GOLD STANDARD
+# The 1st is the negative group
+# The 2nd is the positive group
 CheckGoldStandard <- function(xsample, positive=NULL) {
   xs=NULL; xs.levels=NULL;
   xs <- as.factor(xsample)
@@ -20,7 +42,9 @@ CheckGoldStandard <- function(xsample, positive=NULL) {
   xs <- (xs == positive)*1
   return(xs)}
 
-
+##########################################################
+# POINTS OF THE ROC CURVE
+# ROCpoints function calculates the coordinates (FPR, TPR)
 ROCpoints <- function(xsample, ysample) {
   fpr.p=NULL; sen.p=NULL; xy.roc=NULL; x.p=NULL; y.p=NULL; pts=NULL;
   x.p <- xsample[which(is.na(xsample)==FALSE & is.na(ysample)==FALSE)]
@@ -42,7 +66,9 @@ ROCpoints <- function(xsample, ysample) {
   xy.roc <- cbind(fpr=fpr.p, tpr=sen.p)
   return(xy.roc)}
 
-
+##########################################################
+# POINTS OF THE PARTIAL ROC CURVE FOR HIGH SENSITIVITY
+# pHSpoints function calculates the points in (tpr0, 1)
 pHSpoints <- function(xsample, ysample, lower.sen) {
   pts.roc=NULL; fpr.roc=NULL; sen.roc=NULL; fpr.p=NULL; sen.p=NULL;
   ppoints=NULL;
@@ -67,7 +93,9 @@ pHSpoints <- function(xsample, ysample, lower.sen) {
                                              fpr.roc[j.low])*lscale, 0)}
   ppoints=cbind(fprp=fpr.p, tprp=sen.p)
   return(ppoints)}
-
+##########################################################
+# PARTIAL AREA UNDER THE ROC CURVE FOR HIGH SENSITIVITY
+# paucHS function calculates the pAUC between (tpr0, 1)
 
 paucHS <- function(xsample, ysample, lower.sen) {
   pts.proc=NULL; fpr.p=NULL; sen.p=NULL; esp.p=NULL; auc.p=NULL;
@@ -79,6 +107,9 @@ paucHS <- function(xsample, ysample, lower.sen) {
                                  mean))
   return(auc.p)}
 
+##########################################################
+# PARTIAL NEGATIVE LIKELIHOOD RATIO FOR HIGH SENSITIVITY
+# pNLR_HS function calculates the NLR between (tpr0, 1)
 pNLR_HS <- function(xsample, ysample, lower.sen) {
   pts.proc=NULL; fpr.p=NULL; sen.p=NULL; pnlr=NULL;
   pts.proc <- pHSpoints(xsample, ysample, lower.sen)
@@ -89,7 +120,9 @@ pNLR_HS <- function(xsample, ysample, lower.sen) {
   pnlr <- (1-sen.p)/(1-fpr.p)
   return(pnlr)}
 
-
+##########################################################
+# PARTIAL ROC CURVE SHAPE FOR HIGH SENSITIVITY
+# shapepROC function classifies the ROC curve by its pNLR
 shapepROC <- function(xsample, ysample, lower.sen) {
   nlr.p=NULL; nlr0=NULL; sproc=NULL;
   nlr.p <- pNLR_HS(xsample, ysample, lower.sen)
@@ -105,7 +138,9 @@ shapepROC <- function(xsample, ysample, lower.sen) {
   }
   return(sproc)}
 
-
+##########################################################
+# FITTED PARTIAL AREA INDEX FOR HIGH SENSITIVITY
+# FpaucHS function calculates the FpAUC index in (tpr0, 1)
 FpaucHS <- function(xsample, ysample, lower.sen) {
   fpr.p=NULL; sen.p=NULL; pauc.p=NULL; sproc.p=NULL; fpauc.p=NULL;
   fpr.p <- pHSpoints(xsample, ysample, lower.sen)[,1]

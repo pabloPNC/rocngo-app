@@ -1,0 +1,25 @@
+.list-group-horizontal {
+    display: flex;
+}
+
+.list-group-horizontal .list-group-item {
+    display: block;
+    flex: 1;
+    border-radius: 0px;
+}
+
+.list-group-horizontal .list-group-item:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+    flex: 2;
+}
+
+.list-group-horizontal .list-group-item:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    margin-bottom: -1px;
+}
