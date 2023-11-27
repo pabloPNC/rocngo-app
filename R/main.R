@@ -191,7 +191,7 @@ main_server <- function(input, output, session) {
         )
     )
 
-    observeEvent(input$database, {
+    observe({
         updateSelectInput(
             session,
             inputId = "database",
