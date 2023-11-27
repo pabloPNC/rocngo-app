@@ -2,7 +2,7 @@ general_panel_content <- list(
     selectInput(
         "database",
         label = "Dataset Selection",
-        choices = list.files("./data/")
+        choices = NULL
     )
 )
 
@@ -163,26 +163,43 @@ main_ui <- dashboardPage(
         )
     ),
     controlbar = dashboardControlbar(),
-  title = "FpAUC"
+    title = "FpAUC"
 )
 
 
-
 main_server <- function(input, output, session) {
-    # TODO: Should only store df
-    # TODO: Contain default (/data) and uploaded
-    # TODO: Updated when uploaded with a new df
+    # TODO: Read data from /data + uploaded
+    # TODO: Fix 'dataset' reactive
+    data_tabs <- c("manage", "view", "emptyPanel", "managePanel", "viewPanel",
+        "explorePanel", "visualizePanel"
+    )
+
+    # TODO: Read RDS files
     data <- reactiveValues(
-        dafault_datasets = list(),
+        default_datasets = list(
+            avengers = avengers,
+            #colon = colon,
+            diamonds = diamonds,
+            #fast_colon = fast_colon,
+            publishers = publishers,
+            titanic = titanic
+        ),
         uploaded_datasets = list(),
         plots = list(
             sensitivity = list(),
             specificity = list()
         )
     )
-    datasets <- reactiveValues()
 
-    # Selects the contents in the menu
+    observeEvent(input$database, {
+        updateSelectInput(
+            session,
+            inputId = "database",
+            choices = names(c(data$default_datasets, data$uploaded_datasets))
+        )
+    })
+
+    # Selects contents in the menu
     observeEvent(input$tabs, updateTabsetPanel(
             session,
             input = "switcher",
@@ -190,10 +207,6 @@ main_server <- function(input, output, session) {
         )
     )
 
-    data_tabs <- c(
-        "manage", "view", "emptyPanel",
-        "managePanel", "viewPanel", "explorePanel", "visualizePanel"
-    )
     observeEvent(
         input$tabs, {
         if (!(input$tabs %in% data_tabs)) {
@@ -204,7 +217,6 @@ main_server <- function(input, output, session) {
             )
         }
     })
-
 
     # data.R server
     data_path <- "./data/"
@@ -218,14 +230,10 @@ main_server <- function(input, output, session) {
     })
 
     dataset <- reactive({
-        if (data_extension() == "csv") {
-            csv <- read_csv(selected_file_path())
-            csv
-        } else if (data_extension() == "rda") {
-            load(paste0("./data/", input$database))
-            get(file_path_sans_ext(input$database))
-        } else if (data_extension() == "rds") {
-            rds <- readRDS(selected_file_path())
+        if (input$database %in% names(data$uploaded_datasets)) {
+            data$uploaded_datasets[[input$database]]
+        } else if (input$database %in% names(data$default_datasets)) {
+            data$default_datasets[[input$database]]
         }
     })
 
@@ -237,6 +245,7 @@ main_server <- function(input, output, session) {
 
 
     output$preview_output <- renderTable({
+        print(dataset())
         if (nrow(dataset()) > 10) {
                 dataset()[1:10, ]
         } else {
@@ -252,20 +261,19 @@ main_server <- function(input, output, session) {
         summary(dataset())
     })
 
+    # TODO: Replace if with dataset
     filtered_dataset <- reactive({
-        if (length(input$select_variables) > 0) {
-            select(dataset(), input$select_variables)
-        } else if (ncol(dataset()) > 10) {
-            dataset()[, c(1:10)]
-        } else {
-            dataset()
-        }
+        #if (length(input$select_variables) > 0) {
+            #select(dataset(), input$select_variables)
+        #} else if (ncol(dataset()) > 10) {
+            #dataset()[, c(1:10)]
+        #} else {
+            #dataset()
+        #}
     })
 
     view_data_server("dataset-preview", filtered_dataset)
     explore_data_server("explore-page", filtered_dataset)
-    # TODO: change input to reactive values
-    # TODO: change input to uploaded datasets
     upload_data_server("upload-page", data)
 
     choices <- reactive({
