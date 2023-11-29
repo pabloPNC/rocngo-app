@@ -168,8 +168,7 @@ main_ui <- dashboardPage(
 
 
 main_server <- function(input, output, session) {
-    # TODO: Read data from /data + uploaded
-    # TODO: Fix 'dataset' reactive
+    # TODO: Fix rds files from /data
     data_tabs <- c("manage", "view", "emptyPanel", "managePanel", "viewPanel",
         "explorePanel", "visualizePanel"
     )
@@ -219,21 +218,23 @@ main_server <- function(input, output, session) {
     })
 
     # data.R server
-    data_path <- "./data/"
-
-    selected_file_path <- reactive({
-        paste0(data_path, input$database)
-    })
-
-    data_extension <- reactive({
-        file_ext(input$database)
-    })
-
     dataset <- reactive({
+        req(input$database)
         if (input$database %in% names(data$uploaded_datasets)) {
             data$uploaded_datasets[[input$database]]
         } else if (input$database %in% names(data$default_datasets)) {
             data$default_datasets[[input$database]]
+        }
+    })
+
+    filtered_dataset <- reactive({
+        req(input$database)
+        if (length(input$select_variables) > 0) {
+            select(dataset(), input$select_variables)
+        } else if (ncol(dataset()) > 10) {
+            dataset()[, c(1:10)]
+        } else {
+            dataset()
         }
     })
 
@@ -243,11 +244,10 @@ main_server <- function(input, output, session) {
         paste0("manage_", input$previewOption)
     ))
 
-
+    # TODO: Should be removed -> Manage screen not used
     output$preview_output <- renderTable({
-        print(dataset())
         if (nrow(dataset()) > 10) {
-                dataset()[1:10, ]
+            dataset()[1:10, ]
         } else {
             dataset()
         }
@@ -261,32 +261,19 @@ main_server <- function(input, output, session) {
         summary(dataset())
     })
 
-    # TODO: Replace if with dataset
-    filtered_dataset <- reactive({
-        #if (length(input$select_variables) > 0) {
-            #select(dataset(), input$select_variables)
-        #} else if (ncol(dataset()) > 10) {
-            #dataset()[, c(1:10)]
-        #} else {
-            #dataset()
-        #}
+    observe({
+        updateSelectInput(
+            session,
+            inputId = "select_variables",
+            choices = colnames(dataset())
+        )
     })
+
 
     view_data_server("dataset-preview", filtered_dataset)
     explore_data_server("explore-page", filtered_dataset)
     upload_data_server("upload-page", data)
 
-    choices <- reactive({
-        colnames(dataset())
-    })
-
-    observeEvent(choices(), {
-        updateSelectInput(
-            session,
-            inputId = "select_variables",
-            choices = choices()
-        )
-    })
 
     # plotsPageServer contents
 
@@ -421,7 +408,7 @@ main_server <- function(input, output, session) {
                 FpaucHS(dataset[[gold_column]],
                     dataset[[column]],
                     input$threshold_sensitivity/100
-                    ) 
+                    )
                 ),
             3)
             box(
@@ -529,7 +516,6 @@ main_server <- function(input, output, session) {
 
 
     # TODO: Show metrics
-
     output$specificity_scores <- renderUI({
         dataset <- dataset()
         gold_column <- input$gold_config_specificity

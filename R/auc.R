@@ -25,12 +25,12 @@ CheckGoldStandard <- function(xsample, positive=NULL) {
   xs <- as.factor(xsample)
   xs.levels <- levels(xs)
   if (length(xs.levels) !=2 ) {
-    print("Error in the Gold Standard: it must be binary")
+    #print("Error in the Gold Standard: it must be binary")
     return(F)
   }
   if (!is.null(positive)) {
     if (!any(xs.levels == positive)) {
-      print("Error in Gold Standard: positive case must be one of the levels")
+      #print("Error in Gold Standard: positive case must be one of the levels")
       return(F)
     }
   } else {

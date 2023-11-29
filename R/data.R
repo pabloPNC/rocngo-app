@@ -1,5 +1,5 @@
 
-# UI - Body/Main contents of Data/Manage
+# UI - Body/Main conents of Data/Manage
 manage_contents <- list(
     h1("Data Manage"),
     tabsetPanel(
@@ -75,7 +75,8 @@ view_data_ui <- function(id) {
                     dataTableOutput(NS(id, "dataset")),
                     title = "View",
                     status = "primary",
-                    width = 12
+                    width = 12,
+                    headerBorder = FALSE
                 ),
                 offset = 1
             )
@@ -83,6 +84,7 @@ view_data_ui <- function(id) {
     )
 }
 
+# TODO: Show table again. Not showing because of data read
 view_data_server <- function(id, input_dataset) {
     moduleServer(id, function(input, output, session) {
         output$dataset <- renderDataTable(
