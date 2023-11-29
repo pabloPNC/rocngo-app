@@ -269,16 +269,17 @@ main_server <- function(input, output, session) {
         )
     })
 
-
+    # TODO: dt resizing when window changes
+    # https://datatables.net/forums/discussion/40852/columns-dont-resize-on-window-resize-unless-scrollx-is-true
     view_data_server("dataset-preview", filtered_dataset)
     explore_data_server("explore-page", filtered_dataset)
+    # TODO: delete file extension from uploads
     upload_data_server("upload-page", data)
+    # TODO: Create modules for sensitivity/specificity
 
 
-    # plotsPageServer contents
 
     # values ------------------------------------------------------------------
-
     stored_plots <- reactiveValues(
         sensitivity = list(),
         specificity = list()

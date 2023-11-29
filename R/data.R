@@ -70,15 +70,14 @@ view_data_ui <- function(id) {
     list(
         fluidRow(
             column(
-                width = 10,
+                width = 12,
                 box(
                     dataTableOutput(NS(id, "dataset")),
                     title = "View",
                     status = "primary",
                     width = 12,
                     headerBorder = FALSE
-                ),
-                offset = 1
+                )
             )
         )
     )
