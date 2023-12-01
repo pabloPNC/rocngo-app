@@ -271,10 +271,12 @@ main_server <- function(input, output, session) {
 
     # TODO: dt resizing when window changes
     # https://datatables.net/forums/discussion/40852/columns-dont-resize-on-window-resize-unless-scrollx-is-true
+    # TODO: fix huge datasets long time to load
     view_data_server("dataset-preview", filtered_dataset)
     explore_data_server("explore-page", filtered_dataset)
     # TODO: delete file extension from uploads
     # TODO: Fix uploading two files > only uploads one
+    # TODO: add download buttns
     upload_data_server("upload-page", data)
     # TODO: Create modules for sensitivity/specificity
 
