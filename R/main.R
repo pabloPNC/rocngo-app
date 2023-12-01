@@ -177,9 +177,9 @@ main_server <- function(input, output, session) {
     data <- reactiveValues(
         default_datasets = list(
             avengers = avengers,
-            #colon = colon,
+            colon = colon,
             diamonds = diamonds,
-            #fast_colon = fast_colon,
+            fast_colon = fast_colon,
             publishers = publishers,
             titanic = titanic
         ),
@@ -274,6 +274,7 @@ main_server <- function(input, output, session) {
     view_data_server("dataset-preview", filtered_dataset)
     explore_data_server("explore-page", filtered_dataset)
     # TODO: delete file extension from uploads
+    # TODO: Fix uploading two files > only uploads one
     upload_data_server("upload-page", data)
     # TODO: Create modules for sensitivity/specificity
 

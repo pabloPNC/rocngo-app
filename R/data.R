@@ -256,11 +256,13 @@ upload_data_ui <- function(id) {
                 width = 12,
                 box(
                     list(
-                        selectInput(
-                            # TEST Input
-                            inputId = NS(id, "select_dataset"),
-                            label = "Select dataset",
-                            choices = NULL
+                        tags$p(
+                            "Select the files you want to use. 
+                            Uploaded files must be in one of the following
+                            formats:"
+                        ),
+                        formattableOutput(
+                            outputId = NS(id, "file_formats")
                         ),
                         fileInput(
                             inputId = NS(id, "upload"),
@@ -268,12 +270,7 @@ upload_data_ui <- function(id) {
                             buttonLabel = "Upload",
                             multiple = TRUE
                         ),
-                        #dataset_container_ui(NS(id, "uploaded_datasets"))
-                        # PLACEHOLDER: dataset_container_ui
-                        list(
-                            p("Test - Dataset list"),
-                            uiOutput(NS(id, "dataset_list"))
-                        )
+                        uiOutput(NS(id, "dataset_list"))
                     ),
                     title = "Upload data",
                     headerBorder = FALSE,
@@ -290,8 +287,7 @@ upload_data_server <- function(id, data) {
     moduleServer(id, function(input, output, session) {
 
         observeEvent(input$upload, {
-            print("[*] Test - uploaded_datasets:")
-            print(data$uploaded_datasets)
+
             for (pos in seq_along(length(input$upload$name))) {
                 dataset_name <- input$upload$name[pos]
                 del_index <- paste0("delete_", dataset_name)
@@ -310,12 +306,6 @@ upload_data_server <- function(id, data) {
                 }, once = TRUE, ignoreInit = TRUE)
 
             }
-
-            updateSelectInput(
-                session,
-                "select_dataset",
-                choices = names(data$uploaded_datasets)
-            )
         })
 
         # PLACEHOLDER: dataset_container_server
@@ -337,6 +327,12 @@ upload_data_server <- function(id, data) {
                 }
             )
         })
+
+        output$file_formats <- renderFormattable(
+            formattable(
+                data.frame(Name = c("JSON"), Extension = "*.json")
+            )
+        )
     })
 }
 

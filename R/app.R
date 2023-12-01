@@ -12,6 +12,7 @@ library(dplyr)
 library(tools)
 library(readr)
 library(htmltools)
+library(formattable)
 
 # Manages app autoreload
 config <- function(...) {
