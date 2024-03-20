@@ -50,21 +50,26 @@ ROCpoints <- function(xsample, ysample) {
   x.p <- xsample[which(is.na(xsample)==FALSE & is.na(ysample)==FALSE)]
   y.p <- ysample[which(is.na(xsample)==FALSE & is.na(ysample)==FALSE)]
   x.p <- CheckGoldStandard(x.p)
+
   pts <- sort(y.p)
   pts <- append(pts[-length(pts)]+diff(pts)/2, min(y.p)-1, 0)
   pts <- append(pts, max(y.p)+1, length(pts))
+
   for (i.pt in 1:length(pts)) {
     pre.p <- NULL
     pt=NULL
     pt <- pts[i.pt]
     pre.p <- (y.p > pt)*1
     fpr.p[i.pt] <- sum((pre.p == 1)*(x.p == 0))/sum(x.p == 0)
-    sen.p[i.pt] <- sum((pre.p == 1)*(x.p == 1))/sum(x.p == 1)}
+    sen.p[i.pt] <- sum((pre.p == 1)*(x.p == 1))/sum(x.p == 1)
+    }
   if (is.unsorted(sen.p)) {
     sen.p <- rev(sen.p)
-    fpr.p <- rev(fpr.p)}
+    fpr.p <- rev(fpr.p)
+    }
   xy.roc <- cbind(fpr=fpr.p, tpr=sen.p)
-  return(xy.roc)}
+  return(xy.roc)
+  }
 
 ##########################################################
 # POINTS OF THE PARTIAL ROC CURVE FOR HIGH SENSITIVITY
@@ -79,13 +84,13 @@ pHSpoints <- function(xsample, ysample, lower.sen) {
   pts.roc <- ROCpoints(xsample, ysample)
   fpr.roc <- pts.roc[,1]
   sen.roc <- pts.roc[,2]
-  
+
   i.low <- min(which(sen.roc >= lower.sen))
   j.low <- max(i.low -1, 1)
-  
+
   fpr.p <- fpr.roc[i.low:length(fpr.roc)]
   sen.p <- sen.roc[i.low:length(sen.roc)]
-  
+
   if ((sen.roc[i.low] > lower.sen) && (i.low>1)) {
     sen.p <- append(sen.p, lower.sen, 0)
     lscale <- (sen.p[1]-sen.roc[j.low])/(sen.roc[i.low]-sen.roc[j.low])

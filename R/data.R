@@ -267,8 +267,7 @@ upload_data_ui <- function(id) {
                         fileInput(
                             inputId = NS(id, "upload"),
                             label = "Upload your file",
-                            buttonLabel = "Upload",
-                            multiple = TRUE
+                            buttonLabel = "Upload"
                         ),
                         uiOutput(NS(id, "dataset_list"))
                     ),
@@ -286,9 +285,10 @@ upload_data_ui <- function(id) {
 upload_data_server <- function(id, data) {
     moduleServer(id, function(input, output, session) {
 
+        # add files
         observeEvent(input$upload, {
+            for (pos in 1:length(input$upload$name)) {
 
-            for (pos in seq_along(length(input$upload$name))) {
                 dataset_name <- input$upload$name[pos]
                 del_index <- paste0("delete_", dataset_name)
 
@@ -298,13 +298,14 @@ upload_data_server <- function(id, data) {
 
                 observeEvent(input[[del_index]], {
                     data$uploaded_datasets[[dataset_name]] <- NULL
+                    print("[*] He pulsado:")
+                    print(dataset_name)
                     updateSelectInput(
                         session,
                         "select_dataset",
                         choices = names(data$uploaded_datasets)
                     )
                 }, once = TRUE, ignoreInit = TRUE)
-
             }
         })
 

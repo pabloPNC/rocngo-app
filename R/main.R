@@ -169,6 +169,8 @@ main_ui <- dashboardPage(
 
 main_server <- function(input, output, session) {
     # TODO: Fix rds files from /data
+    print("*Server Init*")
+    print("--------------------")
     data_tabs <- c("manage", "view", "emptyPanel", "managePanel", "viewPanel",
         "explorePanel", "visualizePanel"
     )
