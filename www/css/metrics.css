@@ -1,0 +1,6 @@
+@media (max-width: 1580px) {
+    .metrics-container > .col-sm-3 {
+        width: 100%;
+        text-align: center;
+    }
+}
