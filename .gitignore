@@ -1,0 +1,14 @@
+# R files
+.Rhistory
+.Rproj.user
+*.Rproj
+.Rbuildignore
+.Rdata
+.httr-oauth
+.DS_Store
+.quarto
+
+# vscode
+*.code-workspace
+.vscode
+
