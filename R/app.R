@@ -1,30 +1,36 @@
-library(shiny)
-library(shinyWidgets)
-library(shinythemes)
-library(shinydashboard)
-library(shinydashboardPlus)
-library(waiter)
-library(shinyFeedback)
-library(tidyverse)
-library(pROC)
-library(ROCpAI)
-library(dplyr)
-library(tools)
-library(readr)
-library(htmltools)
+# INSTALLED
+# library(formattable)
+# library(shiny)
+# library(shinydashboard)
+# library(shinydashboardPlus)
+# library(shinyFeedback)
+# library(shinyWidgets)
+# library(waiter)
+
+# NOT INSTALLED
+# library(shinythemes)
+# library(pROC)
+# library(ROCpAI)
+# library(dplyr)
+# library(tools)
+# library(readr)
+# library(htmltools)
 
 # Manages app autoreload
 config <- function(...) {
     options(shiny.host = "127.0.0.1")
     options(shiny.port = 8000)
     options(shiny.autoreload = TRUE)
+    options(shiny.launch.browser = FALSE)
 }
 
-my_app <- function(...) {
-    ui <- main_ui
-    server <- main_server
-    shinyApp(
-        ui = ui,
-        server = server,
-    )
+#' @importFrom shiny shinyApp fluidPage
+roc_app <- function(...) {
+    # DEV configuration
+    config()
+    ui <- main_ui("main")
+    server <- function(input, output, session) {
+        main_server("main")
+    }
+    shinyApp(ui, server)
 }

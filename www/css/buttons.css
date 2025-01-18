@@ -1,0 +1,17 @@
+.custom-btn {
+    color: white !important;
+}
+
+.trans-btn {
+    width: 85%;
+}
+
+.options-btn-group {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.options-btn-group > .option-btn {
+    width: 50%;
+}
+

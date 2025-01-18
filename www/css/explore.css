@@ -1,0 +1,33 @@
+.options-container {
+    overflow-y: scroll;
+    max-height: 295px;
+}
+
+.center-container {
+    display: flex;
+    justify-content: center;
+}
+
+.exp-var-col-4, .exp-plot-col-8 {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.exp-rename-opt {
+    margin-bottom: 15px;
+}
+
+@media (min-width: 1150px) {
+    .exp-var-col-4 {
+        width: 33.33%;
+        float: left;
+    }
+
+    .exp-plot-col-8 {
+        width: 66.66%;
+        float: left;
+    }
+}
+
+

@@ -1,0 +1,8 @@
+.comp-subtitle {
+    font-size: 18px;
+}
+
+.comp-table-container {
+    max-height: 246.5px;
+    overflow-y: scroll;
+}

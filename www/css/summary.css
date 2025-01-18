@@ -1,0 +1,24 @@
+/* 
+    TODO: add to explore.css file
+*/
+:root {
+    --summ-plot-width: 700px;
+    --summ-plot-height: 550px;
+}
+
+.summary-plot-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.summary-plot-element {
+    width: 100%;
+    max-width: var(--summ-plot-width);
+    height: var(--summ-plot-height);
+}
+
+.table-container {
+    width: 100%;
+}
