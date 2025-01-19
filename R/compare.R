@@ -96,14 +96,14 @@ compare_server <- function(id, selected_dataset) {
     })
     predictors_cond <- reactive({
       all(
-        map_lgl(input$predictors, \(x) is_numeric_var(selected_dataset[[x]]))
+        map_lgl(input$predictors, \(x) is_numeric_var(selected_dataset()[[x]]))
       )
     })
     response_cond <- reactive({
-      is_cat_var(selected_dataset[[input$response]])
+      is_cat_var(selected_dataset()[[input$response]])
     })
     observe({
-      vars <- colnames(selected_dataset)
+      vars <- colnames(selected_dataset())
       updateSelectizeInput(
         inputId = "predictors",
         choices = vars,
@@ -133,14 +133,14 @@ compare_server <- function(id, selected_dataset) {
     observeEvent(input$calculate, {
       if (length(input$predictors) > 0) {
         new_plot <- draw_comp_plot(
-          selected_dataset,
+          selected_dataset(),
           predictors = input$predictors,
           response = input$response,
           threshold_val = input$threshold,
           ratio = ratio()
         )
         new_table <- draw_metrics_table(
-          data = selected_dataset,
+          data = selected_dataset(),
           predictors = input$predictors,
           response = input$response,
           index_choice = input$index,

@@ -72,6 +72,10 @@ main_ui <- function(id) {
           tabName = "specificity",
           metrics_ui(ns("specificity-page"), "Specificity")
         ),
+        tabItem(
+          tabName = "compare",
+          compare_ui(ns("compare-page"), "Compare")
+        ),
         tabItem(tabName = "report", shiny::h1("Report contents here")),
         tabItem(tabName = "about", shiny::h1("About contents here"))
       ),
@@ -195,7 +199,6 @@ main_server <- function(id) {
         choices = colnames(selected_dataset())
       )
     })
-    # view_data_server("dataset-preview", filtered_dataset)
     # New modules
     # TODO: fix data_storage form
     explore_server(
@@ -231,10 +234,6 @@ main_server <- function(id) {
       ),
       ratio = "fpr"
     )
-    # values ------------------------------------------------------------------
-    stored_plots <- reactiveValues(
-      sensitivity = list(),
-      specificity = list()
-    )
+    compare_server("compare-page", selected_dataset)
   })
 }
