@@ -1,4 +1,5 @@
 # TODO: update values of numRangeInput
+# TODO: manage plots for unknown types
 explore_ui <- function(id, title) {
   ns <- NS(id)
   shinydashboard::box(
@@ -80,24 +81,6 @@ explore_ui <- function(id, title) {
 
 explore_server <- function(id, selected_dataset, data_storage) {
   moduleServer(id, function(input, output, session) {
-    # transformations <- list(
-    #   num = list(
-    #     "Transform to categoric" = list(
-    #       ui = draw_cat_opts,
-    #       server = NULL
-    #     )
-    #   ),
-    #   cat = list(
-    #     "Relabel categories" = list(
-    #       ui = NULL,
-    #       server = NULL
-    #     ),
-    #     "Merge categories" = list(
-    #       ui = NULL,
-    #       server = NULL
-    #     )
-    #   )
-    # )
     transformations <- list(
       num = list(
         "Transform to categoric" = "to_cat"
@@ -131,18 +114,18 @@ explore_server <- function(id, selected_dataset, data_storage) {
       temp_dataset()[[input$second_var]]
     })
     opts_number <- reactiveVal(2)
-    # observe({
-    #   updateSelectInput(
-    #     inputId = "summary_var",
-    #     choices = names(temp_dataset())
-    #   )
-    # })
     observeEvent(selected_dataset(), {
       updateSelectInput(
         inputId = "summary_var",
         choices = names(selected_dataset())
       )
       temp_dataset(selected_dataset())
+    })
+    observeEvent(temp_dataset(), {
+      updateSelectInput(
+        inputId = "summary_var",
+        choices = names(temp_dataset())
+      )
     })
     observeEvent(var(), {
       if (is_numeric_var(var())) {
@@ -270,22 +253,11 @@ explore_server <- function(id, selected_dataset, data_storage) {
           inputId = session$ns("second_var"),
           label = "Second variable (plot)",
           choices = c("-", names(temp_dataset()))
-          # choices = c("-", names(selected_dataset()))
         )
       }
     })
     output$summary_plot <- renderPlotly({
-      # TODO: result not found when changing dataset
       req(var())
-      # print("Var:")
-      # print(var())
-      # print("Temp dataset:")
-      # print(head(temp_dataset()))
-      # print("Summary_var:")
-      # print(input$summary_var)
-      # print("Second_var:")
-      # print(input$second_var)
-      # print("+++++++++++++++++++++++++++++++++++++++")
       if (is_cat_var(var())) {
         result <- cat_plotly(
           temp_dataset(),
@@ -792,7 +764,7 @@ transf_var <- function(
   sum_var,
   new_var
 ) {
-  if (transformation == "Transform to categoric") {
+  if (transformation == "to_cat") {
     result <- transf_cat(
       input = input,
       number = number,
@@ -800,14 +772,14 @@ transf_var <- function(
       sum_var = sum_var,
       new_var = new_var
     )
-  } else if (transformation == "Relabel categories") {
+  } else if (transformation == "relab_cat") {
     result <- transf_relabel(
       input = input,
       temp_dataset = temp_dataset,
       sum_var = sum_var,
       new_var = new_var
     )
-  } else if (transformation == "Merge categories") {
+  } else if (transformation == "merge_cat") {
     result <- transf_merge(
       input = input,
       temp_dataset = temp_dataset,
