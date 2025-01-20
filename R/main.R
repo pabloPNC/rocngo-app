@@ -158,17 +158,6 @@ main_server <- function(id) {
         }
       }
     )
-    # TODO: Delete filtered dataset. Filtering of dataset is done inside the module
-    filtered_dataset <- reactive({
-      req(input$database)
-      if (length(input$select_variables) > 0) {
-        select(selected_dataset(), input$select_variables)
-      } else if (ncol(selected_dataset()) > 10) {
-        selected_dataset()[, c(1:10)]
-      } else {
-        selected_dataset()
-      }
-    })
 
     output$str_output <- renderPrint({
       str(selected_dataset())
