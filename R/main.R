@@ -1,3 +1,5 @@
+# TODO: Include saved datasets from explore in selections
+
 #' Main page UI
 #' @importFrom shinydashboard sidebarMenu menuItem menuSubItem dashboardBody tabItem tabItems
 #' @importFrom shinydashboardPlus dashboardPage dashboardHeader dashboardSidebar dashboardControlbar
@@ -167,22 +169,6 @@ main_server <- function(id) {
         selected_dataset()
       }
     })
-
-    observeEvent(input$previewOption, updateTabsetPanel(
-      session,
-      "preview_type",
-      paste0("manage_", input$previewOption)
-    ))
-
-    # TODO: Should be removed -> Manage screen not used
-    output$preview_output <- renderTable({
-      if (nrow(selected_dataset()) > 10) {
-        selected_dataset()[1:10, ]
-      } else {
-        selected_dataset()
-      }
-    })
-
 
     output$str_output <- renderPrint({
       str(selected_dataset())

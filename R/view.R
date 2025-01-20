@@ -8,7 +8,6 @@ view_ui <- function(id, title) {
     title = title,
     status = "primary",
     headerBorder = FALSE,
-    # TODO: extract dependency
     full_box_dep(),
     shiny::fluidRow(
       shiny::column(
@@ -43,34 +42,33 @@ view_server <- function(id, data) {
     dataset <- reactive({
       lower_index <- input$column_slider[[1]]
       upper_index <- input$column_slider[[2]]
-      dplyr::select(data(), lower_index:upper_index)
+      select(data(), lower_index:upper_index)
     })
-    shiny::observe(
-      {
-        column_min <- 1
-        column_max <- ncol(data())
-        if (is_large_dataset(data(), limit = 100)) {
-          value <- c(1, 100)
-        } else {
-          value <- c(1, column_max)
-        }
-        shiny::updateSliderInput(
-          inputId = "column_slider",
-          min = column_min,
-          max = column_max,
-          value = value,
-          step = 1
-        )
-        updateNumRangeInput(
-          id = "column_range",
-          min = column_min,
-          max = column_max,
-          value = value,
-          step = 1
-        )
-      },
-      priority = -1
-    )
+    shiny::observeEvent(data(), {
+      column_min <- 1
+      column_max <- ncol(data())
+      if (is_large_dataset(data(), limit = 100)) {
+        value <- c(1, 100)
+      } else {
+        value <- c(1, column_max)
+      }
+      freezeReactiveValue(input, "column_slider")
+      freezeReactiveValue(input, "column_range")
+      shiny::updateSliderInput(
+        inputId = "column_slider",
+        min = column_min,
+        max = column_max,
+        value = value,
+        step = 1
+      )
+      updateNumRangeInput(
+        id = "column_range",
+        min = column_min,
+        max = column_max,
+        value = value,
+        step = 1
+      )
+    })
     observeEvent(input$column_range, {
       shiny::updateSliderInput(
         inputId = "column_slider",
