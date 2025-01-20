@@ -1,5 +1,3 @@
-# TODO: Include saved datasets from explore in selections
-
 #' Main page UI
 #' @importFrom shinydashboard sidebarMenu menuItem menuSubItem dashboardBody tabItem tabItems
 #' @importFrom shinydashboardPlus dashboardPage dashboardHeader dashboardSidebar dashboardControlbar
@@ -97,45 +95,42 @@ main_server <- function(id) {
       "manage", "view", "emptyPanel", "managePanel",
       "viewPanel", "explorePanel", "visualizePanel"
     )
-    # TODO: transform reactiveValues into a reactiveVal(list())
-    data <- reactiveValues(
-      default_datasets = list(
-        avengers = avengers,
-        colon = colon,
-        diamonds = diamonds,
-        fast_colon = fast_colon,
-        publishers = publishers,
-        titanic = titanic
-      ),
-      uploaded_datasets = list(),
-      plots = list(
-        sensitivity = list(),
-        specificity = list()
-      )
-    )
-    # TODO: rethink structure <- maybe this one is correct
     data_storage <- list(
       default_datasets = reactiveVal(
-        list(colon = colon, fast_colon = fast_colon)
+        list(
+          # TODO: repair colon to avoid duplicates
+          # colon = colon,
+          fast_colon = fast_colon,
+          avengers = avengers,
+          diamonds = diamonds,
+          publishers = publishers,
+          titanic = titanic
+        )
       ),
       upload_datasets = reactiveVal(
         list(test = fast_colon)
       )
     )
-    # data.R server
     selected_dataset <- reactive({
       req(input$database)
-      if (input$database %in% names(data$uploaded_datasets)) {
-        data$uploaded_datasets[[input$database]]
-      } else if (input$database %in% names(data$default_datasets)) {
-        data$default_datasets[[input$database]]
+      default_datasets <- names(data_storage[["default_datasets"]]())
+      upload_datasets <- names(data_storage[["upload_datasets"]]())
+      if (input$database %in% default_datasets) {
+        data_storage[["default_datasets"]]()[[input$database]]
+      } else if (input$database %in% upload_datasets) {
+        data_storage[["upload_datasets"]]()[[input$database]]
       }
     })
     observe({
       updateSelectInput(
         session,
         inputId = "database",
-        choices = names(c(data$default_datasets, data$uploaded_datasets))
+        choices = names(
+          c(
+            data_storage[["default_datasets"]](),
+            data_storage[["upload_datasets"]]()
+          )
+        )
       )
     })
 
