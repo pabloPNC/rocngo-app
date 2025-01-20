@@ -1,5 +1,4 @@
 # TODO: update values of numRangeInput
-# TODO: plot not showing when var is chr
 explore_ui <- function(id, title) {
   ns <- NS(id)
   shinydashboard::box(
@@ -81,22 +80,31 @@ explore_ui <- function(id, title) {
 
 explore_server <- function(id, selected_dataset, data_storage) {
   moduleServer(id, function(input, output, session) {
+    # transformations <- list(
+    #   num = list(
+    #     "Transform to categoric" = list(
+    #       ui = draw_cat_opts,
+    #       server = NULL
+    #     )
+    #   ),
+    #   cat = list(
+    #     "Relabel categories" = list(
+    #       ui = NULL,
+    #       server = NULL
+    #     ),
+    #     "Merge categories" = list(
+    #       ui = NULL,
+    #       server = NULL
+    #     )
+    #   )
+    # )
     transformations <- list(
       num = list(
-        "Transform to categoric" = list(
-          ui = draw_cat_opts,
-          server = NULL
-        )
+        "Transform to categoric" = "to_cat"
       ),
       cat = list(
-        "Relabel categories" = list(
-          ui = NULL,
-          server = NULL
-        ),
-        "Merge categories" = list(
-          ui = NULL,
-          server = NULL
-        )
+        "Relabel categories" = "relab_cat",
+        "Merge categories" = "merge_cat"
       )
     )
     temp_dataset <- reactiveVal(NULL)
@@ -123,33 +131,32 @@ explore_server <- function(id, selected_dataset, data_storage) {
       temp_dataset()[[input$second_var]]
     })
     opts_number <- reactiveVal(2)
-    observe({
-      temp_dataset(selected_dataset())
-      updateSelectInput(
-        inputId = "summary_var",
-        choices = names(temp_dataset())
-      )
-    })
     # observe({
     #   updateSelectInput(
     #     inputId = "summary_var",
     #     choices = names(temp_dataset())
     #   )
     # })
-    observe({
-      req(var())
+    observeEvent(selected_dataset(), {
+      updateSelectInput(
+        inputId = "summary_var",
+        choices = names(selected_dataset())
+      )
+      temp_dataset(selected_dataset())
+    })
+    observeEvent(var(), {
       if (is_numeric_var(var())) {
-        choices <- names(transformations[["num"]])
+        choices <- transformations[["num"]]
       } else if (is_cat_var(var())) {
-        choices <- names(transformations[["cat"]])
+        choices <- transformations[["cat"]]
       }
       updateSelectInput(
         inputId = "transformation",
         choices = choices
       )
     })
-    observe({
-      req(input$second_var)
+    observeEvent(input$second_var, {
+      # req(input$second_var)
       is_cat <- is_cat_var(second_var())
       is_null <- input$second_var == "-"
       if (is_cat | is_null) {
@@ -262,19 +269,30 @@ explore_server <- function(id, selected_dataset, data_storage) {
         selectInput(
           inputId = session$ns("second_var"),
           label = "Second variable (plot)",
-          choices = c("-", names(selected_dataset()))
+          choices = c("-", names(temp_dataset()))
+          # choices = c("-", names(selected_dataset()))
         )
       }
     })
     output$summary_plot <- renderPlotly({
-      req(input$summary_var, input$second_var)
-      # TODO: result not founded sometimes
+      # TODO: result not found when changing dataset
+      req(var())
+      # print("Var:")
+      # print(var())
+      # print("Temp dataset:")
+      # print(head(temp_dataset()))
+      # print("Summary_var:")
+      # print(input$summary_var)
+      # print("Second_var:")
+      # print(input$second_var)
+      # print("+++++++++++++++++++++++++++++++++++++++")
       if (is_cat_var(var())) {
         result <- cat_plotly(
           temp_dataset(),
           input$summary_var
         )
       } else if (is_numeric_var(var())) {
+        req(input$second_var)
         result <- numeric_plotly(
           data = temp_dataset(),
           num_variable = input$summary_var,
@@ -292,16 +310,19 @@ explore_server <- function(id, selected_dataset, data_storage) {
       )
     })
     output$transf_opts <- renderUI({
-      req(input$summary_var %in% colnames(temp_dataset()))
-      if (input$transformation == "Transform to categoric") {
+      req(
+        input$summary_var %in% colnames(temp_dataset()),
+        input$transformation %in% transformations[[var_class()]]
+      )
+      if (input$transformation == "to_cat") {
         result <- draw_cat_opts(opts_number(), session)
-      } else if (input$transformation == "Relabel categories") {
+      } else if (input$transformation == "relab_cat") {
         result <- draw_relabel_opts(
           session = session,
           temp_dataset = temp_dataset(),
           sum_var = input$summary_var
         )
-      } else if (input$transformation == "Merge categories") {
+      } else if (input$transformation == "merge_cat") {
         result <- draw_merge_opts(
           session = session,
           temp_dataset = temp_dataset(),
