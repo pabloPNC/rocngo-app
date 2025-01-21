@@ -38,3 +38,9 @@ transform_index_name <- function(index_name) {
   acronym_parts <- stringr::str_split(index_name, pattern = "(?<=^.{2})")[[1]]
   str_c(str_to_lower(acronym_parts[1]), "_", str_to_lower(acronym_parts[2]))
 }
+
+remove_box_header <- function(box) {
+  query <- tagQuery(box)
+  box <- query$find(".box-header")$remove()$allTags()
+  box
+}

@@ -1,5 +1,4 @@
 # TODO: update values of numRangeInput
-# TODO: manage plots for unknown types
 explore_ui <- function(id, title) {
   ns <- NS(id)
   shinydashboard::box(
@@ -46,14 +45,9 @@ explore_ui <- function(id, title) {
         uiOutput(
           outputId = ns("transf_opts")
         ),
-        tags$div(
+        shiny::uiOutput(
           class = "center-container",
-          actionButton(
-            class = "btn btn-primary custom-btn trans-btn",
-            inputId = ns("transform"),
-            label = "Transform",
-            icon = icon("gear")
-          )
+          outputId = ns("transf_container")
         )
       ),
       shiny::div(
@@ -88,6 +82,9 @@ explore_server <- function(id, selected_dataset, data_storage) {
       cat = list(
         "Relabel categories" = "relab_cat",
         "Merge categories" = "merge_cat"
+      ),
+      other = list(
+        "-" = "-"
       )
     )
     temp_dataset <- reactiveVal(NULL)
@@ -106,7 +103,7 @@ explore_server <- function(id, selected_dataset, data_storage) {
       } else if (is_cat_var(var())) {
         return("cat")
       } else {
-        return(NULL)
+        return("other")
       }
     })
     second_var <- reactive({
@@ -128,10 +125,13 @@ explore_server <- function(id, selected_dataset, data_storage) {
       )
     })
     observeEvent(var(), {
-      if (is_numeric_var(var())) {
+      var_class()
+      if (var_class() == "num") {
         choices <- transformations[["num"]]
-      } else if (is_cat_var(var())) {
+      } else if (var_class() == "cat") {
         choices <- transformations[["cat"]]
+      } else if (var_class() == "other") {
+        choices <- "-"
       }
       updateSelectInput(
         inputId = "transformation",
@@ -139,7 +139,6 @@ explore_server <- function(id, selected_dataset, data_storage) {
       )
     })
     observeEvent(input$second_var, {
-      # req(input$second_var)
       is_cat <- is_cat_var(second_var())
       is_null <- input$second_var == "-"
       if (is_cat | is_null) {
@@ -256,20 +255,37 @@ explore_server <- function(id, selected_dataset, data_storage) {
         )
       }
     })
+    output$transf_container <- renderUI({
+      btn <- actionButton(
+        class = "btn btn-primary custom-btn trans-btn",
+        inputId = session$ns("transform"),
+        label = "Transform",
+        icon = icon("gear")
+      )
+      if (input$transformation != "-") {
+        btn
+      } else {
+        btn %>% tagAppendAttributes(
+          disabled = "disabled"
+        )
+      }
+    })
     output$summary_plot <- renderPlotly({
       req(var())
-      if (is_cat_var(var())) {
+      if (var_class() == "cat") {
         result <- cat_plotly(
           temp_dataset(),
           input$summary_var
         )
-      } else if (is_numeric_var(var())) {
+      } else if (var_class() == "num") {
         req(input$second_var)
         result <- numeric_plotly(
           data = temp_dataset(),
           num_variable = input$summary_var,
           cat_variable = input$second_var
         )
+      } else if (var_class() == "other") {
+        result <- empty_plotly()
       }
       result
     })
@@ -299,6 +315,11 @@ explore_server <- function(id, selected_dataset, data_storage) {
           session = session,
           temp_dataset = temp_dataset(),
           sum_var = input$summary_var
+        )
+      } else if (input$transformation == "-") {
+        result <- draw_unknown_opts(
+          var_name = input$summary_var,
+          var_type = var_type()
         )
       }
       result
@@ -543,6 +564,32 @@ cat_plotly <- function(data, cat_variable) {
     )
 }
 
+empty_plotly <- function() {
+  axis_conf <- list2(
+    showline = TRUE,
+    showgrid = FALSE,
+    showticklabels = TRUE,
+    linecolor = 'rgb(204, 204, 204)',
+    linewidth = 2,
+    ticks = 'outside',
+    tickcolor = 'rgb(204, 204, 204)',
+    tickwidth = 2,
+    ticklen = 5,
+    tickfont = list(family = "Arial", size = 12, color = "rgb(82, 82, 82)"),
+    zeroline = FALSE,
+    rangemode = "tozero"
+  )
+  fig <- plot_ly(type = "scatter", mode = "markers") %>%
+    plotly::layout(
+      xaxis = list2(title = "x", !!!axis_conf),
+      yaxis = list2(title = "y", !!!axis_conf),
+      plot_bgcolor = "rgb(255, 255, 255)",
+      showlegend = FALSE
+    ) %>%
+    plotly::config(displayModeBar = FALSE)
+  fig
+}
+
 draw_cat_opt <- function(number, session) {
   # TODO: update with max and min values of function
   list(
@@ -723,12 +770,29 @@ draw_merge_opts <- function(
   )
 }
 
+draw_unknown_opts <- function(
+  var_name,
+  var_type) {
+  div(
+    box(
+      headerBorder = FALSE,
+      status = "warning",
+      width = 12,
+      tags$p(
+        str_glue("Can't plot or transform `{var_name}`. Variable is of type "),
+        tags$code(var_type),
+        " which can't be used by the app."
+      )
+    ) %>% remove_box_header()
+  )
+}
+
 transf_merge <- function(
     input,
     temp_dataset,
     sum_var,
     new_var) {
-  if (is.null(new_var) | new_var == "") {
+  if (is.null(new_var) || new_var == "") {
     return(showModal(modal_missing_var()))
   }
   sum_var <- sym(sum_var)
@@ -889,3 +953,30 @@ box_dep <- function() {
     stylesheet = "boxes.css"
   )
 }
+
+
+# library(plotly)
+# library(rlang)
+#   axis_conf <- list2(
+#     showline = TRUE,
+#     showgrid = FALSE,
+#     showticklabels = TRUE,
+#     linecolor = 'rgb(204, 204, 204)',
+#     linewidth = 2,
+#     ticks = 'outside',
+#     tickcolor = 'rgb(204, 204, 204)',
+#     tickwidth = 2,
+#     ticklen = 5,
+#     tickfont = list(family = "Arial", size = 12, color = "rgb(82, 82, 82)"),
+#     zeroline = FALSE,
+#     rangemode = "tozero"
+#   )
+#   fig <- plot_ly() %>%
+#     plotly::layout(
+#       xaxis = list2(title = "x", !!!axis_conf),
+#       yaxis = list2(title = "y", !!!axis_conf),
+#       plot_bgcolor = "rgb(255, 255, 255)",
+#       showlegend = FALSE
+#     ) %>%
+#     config(displayModeBar = FALSE)
+#   fig

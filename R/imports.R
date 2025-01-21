@@ -11,7 +11,7 @@
 #' @importFrom tidyr replace_na
 #' @importFrom stringr str_flatten str_to_lower str_c
 #' @importFrom purrr map_lgl
-#' @importFrom htmltools tagList tagAppendChild tagAppendAttributes htmlDependency
+#' @importFrom htmltools tagList tagAppendChild tagAppendAttributes htmlDependency tagQuery
 #' @importFrom forcats fct_recode fct_collapse
 #' @importFrom plotly plotlyOutput renderPlotly ggplotly layout config plot_ly
 #' @importFrom ROCnGO add_roc_curve summarize_predictor

@@ -6,6 +6,7 @@
 .center-container {
     display: flex;
     justify-content: center;
+    width: 100%;
 }
 
 .exp-var-col-4, .exp-plot-col-8 {
