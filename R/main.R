@@ -72,6 +72,10 @@ main_ui <- function(id) {
           tabName = "specificity",
           metrics_ui(ns("specificity-page"), "Specificity")
         ),
+        tabItem(
+          tabName = "compare",
+          compare_ui(ns("compare-page"), "Compare")
+        ),
         tabItem(tabName = "report", shiny::h1("Report contents here")),
         tabItem(tabName = "about", shiny::h1("About contents here"))
       ),
@@ -91,45 +95,42 @@ main_server <- function(id) {
       "manage", "view", "emptyPanel", "managePanel",
       "viewPanel", "explorePanel", "visualizePanel"
     )
-    # TODO: transform reactiveValues into a reactiveVal(list())
-    data <- reactiveValues(
-      default_datasets = list(
-        avengers = avengers,
-        colon = colon,
-        diamonds = diamonds,
-        fast_colon = fast_colon,
-        publishers = publishers,
-        titanic = titanic
-      ),
-      uploaded_datasets = list(),
-      plots = list(
-        sensitivity = list(),
-        specificity = list()
-      )
-    )
-    # TODO: rethink structure <- maybe this one is correct
     data_storage <- list(
       default_datasets = reactiveVal(
-        list(colon = colon, fast_colon = fast_colon)
+        list(
+          # TODO: repair colon to avoid duplicates
+          # colon = colon,
+          fast_colon = fast_colon,
+          avengers = avengers,
+          diamonds = diamonds,
+          publishers = publishers,
+          titanic = titanic
+        )
       ),
       upload_datasets = reactiveVal(
         list(test = fast_colon)
       )
     )
-    # data.R server
     selected_dataset <- reactive({
       req(input$database)
-      if (input$database %in% names(data$uploaded_datasets)) {
-        data$uploaded_datasets[[input$database]]
-      } else if (input$database %in% names(data$default_datasets)) {
-        data$default_datasets[[input$database]]
+      default_datasets <- names(data_storage[["default_datasets"]]())
+      upload_datasets <- names(data_storage[["upload_datasets"]]())
+      if (input$database %in% default_datasets) {
+        data_storage[["default_datasets"]]()[[input$database]]
+      } else if (input$database %in% upload_datasets) {
+        data_storage[["upload_datasets"]]()[[input$database]]
       }
     })
     observe({
       updateSelectInput(
         session,
         inputId = "database",
-        choices = names(c(data$default_datasets, data$uploaded_datasets))
+        choices = names(
+          c(
+            data_storage[["default_datasets"]](),
+            data_storage[["upload_datasets"]]()
+          )
+        )
       )
     })
 
@@ -152,33 +153,6 @@ main_server <- function(id) {
         }
       }
     )
-    # TODO: Delete filtered dataset. Filtering of dataset is done inside the module
-    filtered_dataset <- reactive({
-      req(input$database)
-      if (length(input$select_variables) > 0) {
-        select(selected_dataset(), input$select_variables)
-      } else if (ncol(selected_dataset()) > 10) {
-        selected_dataset()[, c(1:10)]
-      } else {
-        selected_dataset()
-      }
-    })
-
-    observeEvent(input$previewOption, updateTabsetPanel(
-      session,
-      "preview_type",
-      paste0("manage_", input$previewOption)
-    ))
-
-    # TODO: Should be removed -> Manage screen not used
-    output$preview_output <- renderTable({
-      if (nrow(selected_dataset()) > 10) {
-        selected_dataset()[1:10, ]
-      } else {
-        selected_dataset()
-      }
-    })
-
 
     output$str_output <- renderPrint({
       str(selected_dataset())
@@ -195,7 +169,6 @@ main_server <- function(id) {
         choices = colnames(selected_dataset())
       )
     })
-    # view_data_server("dataset-preview", filtered_dataset)
     # New modules
     # TODO: fix data_storage form
     explore_server(
@@ -231,10 +204,6 @@ main_server <- function(id) {
       ),
       ratio = "fpr"
     )
-    # values ------------------------------------------------------------------
-    stored_plots <- reactiveValues(
-      sensitivity = list(),
-      specificity = list()
-    )
+    compare_server("compare-page", selected_dataset)
   })
 }
