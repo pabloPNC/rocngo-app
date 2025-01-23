@@ -51,7 +51,8 @@ remove_box_header <- function(box) {
 #' @description
 #' `extract_coldata` returns a `data.frame` with variables describing samples.
 extract_coldata <- function(.data, ..., .sample_id) {
-  select(.data, !c(...), {{ .sample_id }})
+  select(.data, !c(..., {{ .sample_id }}))
+
 }
 
 #' @title
@@ -94,10 +95,10 @@ extract_rowdata <- function(.data, ...) {
 #' `as_sum_exp` returns a `SummarizedExperiment` object containing specified
 #' columns as features and the rest as sample metadata.
 as_sum_exp <- function(.data, ..., .sample_id = NULL) {
-  sample_exp <- enquo(.sample_id)
-  if (quo_is_null(sample_exp)) {
-    .data <- .data %>% rowid_to_column(var = "sample_id")
-    .sample_id <- "sample_id"
+  sample_id_exp <- enquo(.sample_id)
+  if (quo_is_null(sample_id_exp)) {
+    .data <- .data %>% rowid_to_column(var = ".sample_id")
+    .sample_id <- ".sample_id"
   }
   col_data <- extract_coldata(.data, ..., .sample_id = {{ .sample_id }})
   se_data <- extract_data(.data,  ..., .sample_id = {{ .sample_id }})
@@ -110,42 +111,46 @@ as_sum_exp <- function(.data, ..., .sample_id = NULL) {
   se
 }
 
-# TEST ------------------------------
-sumexp_to_df <- function(se) {
-  data <- assay(se)
-  gene_data <- rowData(se)
-  sample_data <- colData(se)
-  # Include rownames in columns
-  gene_data <- data.frame(gene_data) %>% rownames_to_column(var = "gene")
-  sample_data <- data.frame(sample_data) %>% rownames_to_column(var = "sample")
-
-  print(
-    data.frame(data) %>%
-      # Add gene name to rows
-      bind_cols(gene_data) %>%
-      # Merge samples name and values in 1 column
-      pivot_longer(
-        cols = !c(colnames(gene_data)),
-        names_to = "sample",
-        values_to = "gene_exp"
-      ) %>%
-      # Create variables for genes
-      pivot_wider(
-        values_from = "gene_exp",
-        names_from = "gene"
-      ) %>% bind_cols(
-        sample_data
-      )
-  )
-  # data <- data.frame(data) %>%
-  #   bind_cols()
-
-  # print(as_tibble(data))
-  # print(
-  #   bind_cols(
-  #     as_tibble(gene_data),
-  #     as_tibble(data)
-  #   )
-  # )
+#' @title
+#' Extracts `colData` from a `SummarizedExperiment` to a `data.frame`.
+rowdata_to_df <- function(se) {
+  rowData(se) %>% data.frame() %>% rownames_to_column(var = ".gene")
 }
-# sumexp_to_df(t)
+
+#' @title
+#' Extracts `rowData` from a s `SummarizedExperiment` to a `data.frame`.
+coldata_to_df <- function(se) {
+  colData(se) %>% data.frame() %>% rownames_to_column(var = ".sample_id")
+}
+
+#' @title
+#' Transform a `SummarizedExperiment` into a list of `data.frames`.
+#'
+#' @description
+#' `sumexp_to_df` returns a [list()] where each element is an assay
+#' transformed to a `data.frame`.
+sumexp_to_df <- function(se) {
+  assay_dfs <- list()
+  row_data <- rowdata_to_df(se)
+  col_data <- coldata_to_df(se)
+  exp_assays <- assays(se)
+  for (i in 1:seq_along(exp_assays)) {
+    assay <- exp_assays[[i]]
+    assay_df <- data.frame(assay) %>%
+      bind_cols(row_data) %>%
+      pivot_longer(
+        cols = !c(colnames(row_data)),
+        names_to = ".assay_sample",
+        values_to = ".gene_metric"
+      ) %>%
+      pivot_wider(
+        values_from = ".gene_metric",
+        names_from = ".gene"
+      ) %>%
+      bind_cols(col_data) %>%
+      select(!c(".assay_sample")) %>%
+      as_tibble()
+    assay_dfs[[i]] <- assay_df
+  }
+  assay_dfs
+}
