@@ -124,6 +124,32 @@ coldata_to_df <- function(se) {
 }
 
 #' @title
+#' Includes information in `rowData` into assay `data.frame`.
+include_rowdata <- function(assay_data, row_data) {
+  assay_df <- assay_data %>%
+    bind_cols(row_data) %>%
+    pivot_longer(
+      cols = !c(colnames(row_data)),
+      names_to = ".assay_sample",
+      values_to = ".gene_metric"
+    )
+  assay_df
+}
+
+#' @title
+#' Includes information in `colData` into assay `data.frame`
+include_coldata <- function(assay_data, col_data) {
+  assay_df <- assay_data %>%
+    pivot_wider(
+      values_from = ".gene_metric",
+      names_from = ".gene"
+    ) %>%
+    bind_cols(col_data) %>%
+    select(!c(".assay_sample"))
+  assay_df
+}
+
+#' @title
 #' Transform a `SummarizedExperiment` into a list of `data.frames`.
 #'
 #' @description
@@ -137,18 +163,8 @@ sumexp_to_df <- function(se) {
   for (i in 1:seq_along(exp_assays)) {
     assay <- exp_assays[[i]]
     assay_df <- data.frame(assay) %>%
-      bind_cols(row_data) %>%
-      pivot_longer(
-        cols = !c(colnames(row_data)),
-        names_to = ".assay_sample",
-        values_to = ".gene_metric"
-      ) %>%
-      pivot_wider(
-        values_from = ".gene_metric",
-        names_from = ".gene"
-      ) %>%
-      bind_cols(col_data) %>%
-      select(!c(".assay_sample")) %>%
+      include_rowdata(row_data) %>%
+      include_coldata(col_data) %>%
       as_tibble()
     assay_dfs[[i]] <- assay_df
   }
