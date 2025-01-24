@@ -1,4 +1,3 @@
-# TODO: Add method to upload SummarizedExperiment
 #' @importFrom shiny NS tags uiOutput
 upload_ui <- function(id, title) {
   ns <- NS(id)
@@ -90,7 +89,12 @@ upload_server <- function(id, data_storage) {
       waiter$hide()
     })
     output$stored <- renderUI({
-      draw_stored_table(data_storage, data_storage_extensions, id, session = session)
+      draw_stored_table(
+        data_storage,
+        data_storage_extensions,
+        id,
+        session = session
+      )
     })
   })
 }
@@ -138,7 +142,11 @@ stored_file_row <- function(dataset_name, dataset_ext, ns_id, session) {
   )
 }
 
-draw_stored_table <- function(data_storage, data_storage_extensions, ns_id, session) {
+draw_stored_table <- function(
+    data_storage,
+    data_storage_extensions,
+    ns_id,
+    session) {
   table_rows <- tagList()
   for (name in names(data_storage())) {
     table_rows <- tagAppendChild(
@@ -165,44 +173,68 @@ draw_stored_table <- function(data_storage, data_storage_extensions, ns_id, sess
 
 #' @importFrom tools file_ext file_path_sans_ext
 #' @importFrom rlang list2
-import_datasets <- function(upload_dataset, storage, storage_ext, input, output) {
+import_datasets <- function(
+    upload_dataset,
+    storage,
+    storage_ext,
+    input,
+    output) {
   for (i in 1:nrow(upload_dataset)) {
     dataset_info <- upload_dataset[i, ]
     dataset_name <- file_path_sans_ext(dataset_info[["name"]])
     dataset_ext <- file_ext(dataset_info[["name"]])
     dataset_path <- dataset_info[["datapath"]]
-    if (validate_dataset(dataset_name, dataset_ext, dataset_path, storage)) {
-      read_dataset <- read_data(dataset_path, dataset_ext)
-      if (!is.null(read_dataset)) {
+    valid_cond <- validate_dataset(
+      dataset_name = dataset_name,
+      dataset_ext = dataset_ext,
+      dataset_path = dataset_path,
+      storage = storage
+    )
+    if (valid_cond) {
+      read_data <- read_data(dataset_path, dataset_ext)
+      if (!is.null(read_data)) {
         load_data(
-          read_dataset = read_dataset,
-          dataset_name = dataset_name,
-          dataset_ext = dataset_ext,
+          read_data = read_data,
+          data_name = dataset_name,
+          data_ext = dataset_ext,
           storage = storage,
           storage_ext = storage_ext,
           input = input,
           output = output
         )
-        showNotification(
-          str_glue("'{dataset_name}' uploaded"),
-          duration = 2,
-          type = "message"
-        )
-      } else if (is.null(read_dataset)) {
+      } else if (is.null(read_data)) {
         showModal(modal_error_reading())
       }
     }
   }
 }
 
+#' @title
+#' Reads rds files containing `SummarizedExperiment`, `data.frame`or `tibble`.
+read_rds <- function(file) {
+  file <- readRDS(file)
+  types <- class(file)
+  is_sumexp <- "SummarizedExperiment" %in% types
+  is_rang_sumexp <- "RangedSummarizedExperiment" %in% types
+  if (types %in% c("data.frame", "tbl_df")) {
+    result <- as_tibble(file)
+  } else if (is_sumexp && !(is_rang_sumexp)) {
+    result <- sumexp_to_df(file)
+  } else {
+    stop("Couldn't read rds file")
+  }
+  result
+}
+
+
+#' @title
+#' Tries to read a file based on its extension, otherwise returns no value.
 read_data <- function(file, extension) {
-  # TODO: add min number of rows 1 for header, 1 or more for data
-  # - Add read_rds function to manage different types of objects
   tryCatch(
     expr = switch(extension,
-      "csv" = readr::read_csv(file),
-      "tsv" = readr::read_tsv(file),
-      "rds" = as_tibble(readRDS(file))
+      "csv" = read_csv(file),
+      "tsv" = read_tsv(file),
+      "rds" = read_rds(file)
     ),
     error = function(condition) {
       return(NULL)
@@ -211,10 +243,9 @@ read_data <- function(file, extension) {
 }
 
 write_data <- function(object, file, extension) {
-  # TODO: manage rds files
   switch(extension,
-    "csv" = readr::write_csv(object, file),
-    "tsv" = readr::write_tsv(object, file),
+    "csv" = write_csv(object, file),
+    "tsv" = write_tsv(object, file),
     "rds" = saveRDS(object, file)
   )
 }
@@ -235,53 +266,22 @@ is_valid_format <- function(ext, formats = c("csv", "tsv", "rds")) {
   }
 }
 
-is_valid_object <- function(
-    path,
-    classes = c(
-      "tbl_df",
-      "data.frame",
-      "SummarizedExperiment"
-    )) {
-  tryCatch(
-    expr = {
-      uploaded_rds <- readRDS(path)
-      if (any(class(uploaded_rds) %in% classes)) {
-        return(TRUE)
-      } else {
-        return(FALSE)
-      }
-    },
-    error = function(condition) {
-      return(FALSE)
-    }
-  )
-}
-
+#' @title
+#' Checks filename and its extension is valid.
 validate_dataset <- function(
     dataset_name,
     dataset_ext,
     dataset_path,
     storage) {
-  if (!is_dataset_used(dataset_name, storage)) {
-    if (dataset_ext != "rds") {
-      if (is_valid_format(dataset_ext)) {
-        return(TRUE)
-      } else {
-        showModal(modal_invalid_format(dataset_ext))
-        return(FALSE)
-      }
-    } else if (dataset_ext == "rds") {
-      if (is_valid_object(dataset_path)) {
-        return(TRUE)
-      } else {
-        showModal(modal_invalid_object(dataset_name))
-        return(FALSE)
-      }
-    }
-  } else {
+  if (is_dataset_used(dataset_name, storage)) {
     showModal(modal_dataset_used(dataset_name))
     return(FALSE)
   }
+  if (!is_valid_format(dataset_ext)) {
+    showModal(modal_invalid_format(dataset_ext))
+    return(FALSE)
+  }
+  return(TRUE)
 }
 
 modal_dataset_used <- function(dataset_name) {
@@ -324,7 +324,12 @@ modal_error_reading <- function() {
   )
 }
 
-create_button_observers <- function(data_name, data_ext, data_storage, input, output) {
+create_button_observers <- function(
+    data_name,
+    data_ext,
+    data_storage,
+    input,
+    output) {
   output[[str_glue("{data_name}_download")]] <- downloadHandler(
     filename = str_glue("{data_name}.{data_ext}"),
     content = function(file) {
@@ -338,30 +343,96 @@ create_button_observers <- function(data_name, data_ext, data_storage, input, ou
   observeEvent(input[[stringr::str_c(data_name, "_delete")]],
     {
       delete_reactive_list(data_storage, data_name)
-      showNotification(str_glue("'{data_name}' deleted"), duration = 2, type = "error")
+      showNotification(
+        str_glue("'{data_name}' deleted"),
+        duration = 2,
+        type = "error"
+      )
     },
     ignoreInit = TRUE,
     once = TRUE
   )
 }
 
-load_data <- function(
-    read_dataset,
-    dataset_name,
-    dataset_ext,
+load_tibble <- function(
+    read_data,
+    data_name,
+    data_ext,
     storage,
     storage_ext,
     input,
     output) {
-  extend_reactive_list(
+  extend_reactive_list(storage, list2("{data_name}" := read_data))
+  extend_reactive_list(storage_ext, list2("{data_name}" := data_ext))
+  create_button_observers(data_name, data_ext, storage, input, output)
+  showNotification(
+    str_glue("'{dataset_name}' uploaded"),
+    duration = 2,
+    type = "message"
+  )
+}
+
+load_tibble_list <- function(
+    read_data,
+    data_name,
+    data_ext,
     storage,
-    list2("{dataset_name}" := read_dataset)
-  )
-  extend_reactive_list(
     storage_ext,
-    list2("{dataset_name}" := dataset_ext)
-  )
-  create_button_observers(dataset_name, dataset_ext, storage, input, output)
+    input,
+    output) {
+  for (element_name in names(read_data)) {
+    element <- read_data[[element_name]]
+    full_name <- str_glue("{data_name}_{element_name}")
+    used_cond <- !is_dataset_used(full_name, storage)
+    if (used_cond) {
+      extend_reactive_list(storage, list2("{full_name}" := element))
+      extend_reactive_list(storage_ext, list2("{full_name}" := data_ext))
+      create_button_observers(full_name, data_ext, storage, input, output)
+      showNotification(
+        str_glue("'{full_name}' uploaded"),
+        duration = 2,
+        type = "message"
+      )
+    } else {
+      showNotification(
+        str_glue("Couldn't upload '{full_name}'. Name already in use."),
+        duration = 2,
+        type = "warning"
+      )
+    }
+  }
+}
+
+load_data <- function(
+    read_data,
+    data_name,
+    data_ext,
+    storage,
+    storage_ext,
+    input,
+    output) {
+  data_class <- class(read_data)
+  if ("list" %in% data_class) {
+    load_tibble_list(
+      read_data,
+      data_name,
+      data_ext,
+      storage,
+      storage_ext,
+      input,
+      output
+    )
+  } else if ("tibble" %in% data_class) {
+    load_tibble(
+      read_data,
+      data_name,
+      data_ext,
+      storage,
+      storage_ext,
+      input,
+      output
+    )
+  }
 }
 
 download_button_dep <- function() {
