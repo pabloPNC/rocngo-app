@@ -94,7 +94,7 @@ extract_rowdata <- function(.data, ...) {
 #' @description
 #' `as_sum_exp` returns a `SummarizedExperiment` object containing specified
 #' columns as features and the rest as sample metadata.
-as_sum_exp <- function(.data, ..., .sample_id = NULL) {
+as_sumexp <- function(.data, ..., .sample_id = NULL) {
   sample_id_exp <- enquo(.sample_id)
   if (quo_is_null(sample_id_exp)) {
     .data <- .data %>% rowid_to_column(var = ".sample_id")
@@ -160,13 +160,12 @@ sumexp_to_df <- function(se) {
   row_data <- rowdata_to_df(se)
   col_data <- coldata_to_df(se)
   exp_assays <- assays(se)
-  for (i in 1:seq_along(exp_assays)) {
-    assay <- exp_assays[[i]]
-    assay_df <- data.frame(assay) %>%
+  for (assay_name in names(exp_assays@listData)) {
+    assay_df <- exp_assays[[assay_name]] %>%
       include_rowdata(row_data) %>%
       include_coldata(col_data) %>%
       as_tibble()
-    assay_dfs[[i]] <- assay_df
+    assay_dfs[[assay_name]] <- assay_df
   }
   assay_dfs
 }
