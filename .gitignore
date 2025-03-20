@@ -2,13 +2,15 @@
 .Rhistory
 .Rproj.user
 *.Rproj
-.Rbuildignore
 .Rdata
 .httr-oauth
 .DS_Store
 .quarto
 
+# R outputs
+inst/doc
+docs
+
 # vscode
 *.code-workspace
 .vscode
-
