@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^FpAUC\.Rproj$
+^data-raw$
+^README\.Rmd$
+^LICENSE\.md$
