@@ -1,8 +1,3 @@
-#' @importFrom shiny fluidRow selectInput sliderInput plotOutput column
-#' @importFrom shinydashboard valueBox
-#' @importFrom shinydashboardPlus box
-#' @importFrom shinyFeedback useShinyFeedback
-#' @importFrom waiter useWaiter
 metrics_ui <- function(id, title) {
     ns <- NS(id)
     box(
@@ -81,9 +76,6 @@ metrics_ui <- function(id, title) {
 }
 
 
-#' @importFrom shiny moduleServer reactiveValues observe observeEvent updateSelectInput renderPlot
-#' @importFrom shinydashboard dashboardBody
-#' @importFrom shiny req
 metrics_server <- function(id, dataset, functions, bound_func, ratio) {
     moduleServer(id, function(input, output, session) {
         dataset_variables <- shiny::reactive({
@@ -103,7 +95,7 @@ metrics_server <- function(id, dataset, functions, bound_func, ratio) {
         })
         auc <- shiny::reactive({
             var_type_req(input$gold_standard, input$predictor, dataset())
-            pROC::auc(
+            auc(
                 response = dataset()[[input$gold_standard]],
                 predictor = dataset()[[input$predictor]],
                 direction = "<",
@@ -119,7 +111,7 @@ metrics_server <- function(id, dataset, functions, bound_func, ratio) {
                 bounds <- c((1 - input$threshold / 100), 1)
             }
             as.double(
-                pROC::auc(
+                auc(
                     response = dataset()[[input$gold_standard]],
                     predictor = dataset()[[input$predictor]],
                     direction = "<",
@@ -266,9 +258,6 @@ metrics_server <- function(id, dataset, functions, bound_func, ratio) {
     })
 }
 
-#' @importFrom shiny fluidPage shinyApp
-#' @importFrom shinydashboard dashboardBody
-#' @importFrom shinydashboardPlus dashboardPage dashboardHeader dashboardSidebar
 metrics_tpr_app <- function(id) {
     ui <- dashboardPage(
         header = dashboardHeader(title = NULL),
@@ -296,9 +285,6 @@ metrics_tpr_app <- function(id) {
     shinyApp(ui, server)
 }
 
-#' @importFrom shiny fluidPage shinyApp
-#' @importFrom shinydashboard dashboardBody
-#' @importFrom shinydashboardPlus dashboardPage dashboardHeader dashboardSidebar
 metrics_fpr_app <- function(id) {
     ui <- dashboardPage(
         header = dashboardHeader(title = NULL),
@@ -337,7 +323,6 @@ var_type_cond <- function(response, predictor, dataset) {
     is_binary(response, dataset) & is_continuous(predictor, dataset)
 }
 
-#' @importFrom shiny req
 var_type_req <- function(response, predictor, dataset) {
     req(response, predictor)
     req(
@@ -345,7 +330,6 @@ var_type_req <- function(response, predictor, dataset) {
     )
 }
 
-#' @importFrom ROCnGO add_chance_line
 draw_chance_line <- function(expr) {
     if (expr == TRUE) {
         add_chance_line()
@@ -354,7 +338,6 @@ draw_chance_line <- function(expr) {
     }
 }
 
-#' @importFrom ROCnGO add_threshold_line
 draw_threshold_line <- function(expr, threshold, ratio) {
     if (expr == TRUE) {
         add_threshold_line(threshold/100, ratio)
@@ -386,8 +369,6 @@ draw_bounds <- function(expr, fun, data, response, predictor, threshold, ratio) 
     }
 }
 
-#' @importFrom ggplot2 ggplot xlim ylim labs geom_blank
-#' @importFrom ROCnGO add_chance_line add_threshold_line
 draw_empty_plot <- function(
         threshold,
         ratio,
@@ -402,7 +383,6 @@ draw_empty_plot <- function(
         draw_threshold_line(draw_threshold, threshold, ratio)
 }
 
-#' @importFrom ROCnGO plot_roc_curve add_chance_line hide_legend
 draw_roc_plot <- function(
         dataset,
         predictor,
@@ -432,7 +412,6 @@ draw_roc_plot <- function(
         hide_legend()
 }
 
-#' @importFrom shinydashboard valueBox infoBox
 draw_metric_boxes <- function(
     partial_index_name,
     auc,

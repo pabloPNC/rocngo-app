@@ -1,9 +1,4 @@
 #' Main page UI
-#' @importFrom shinydashboard sidebarMenu menuItem menuSubItem dashboardBody tabItem tabItems
-#' @importFrom shinydashboardPlus dashboardPage dashboardHeader dashboardSidebar dashboardControlbar
-#' @importFrom shiny tagList NS tabsetPanel tabPanelBody
-#' @importFrom waiter spin_1
-#' @importFrom shinyFeedback useShinyFeedback
 main_ui <- function(id) {
   ns <- NS(id)
   dashboardPage(
@@ -87,8 +82,6 @@ main_ui <- function(id) {
 
 
 #' Main page server
-#' @importFrom shiny moduleServer reactiveValues
-#' @importFrom dplyr select
 main_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     data_tabs <- c(

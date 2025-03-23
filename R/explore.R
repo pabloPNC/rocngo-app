@@ -94,7 +94,7 @@ explore_server <- function(id, selected_dataset, data_storage) {
     })
     var_type <- reactive({
       req(input$summary_var)
-      pillar::type_sum(temp_dataset()[[input$summary_var]])
+      type_sum(temp_dataset()[[input$summary_var]])
     })
     var_class <- reactive({
       req(var())
@@ -327,7 +327,6 @@ explore_server <- function(id, selected_dataset, data_storage) {
   })
 }
 
-#' @importFrom shinydashboardPlus dashboardHeader dashboardPage dashboardSidebar
 explore_app <- function() {
   ui <- dashboardPage(
     header = dashboardHeader(title = NULL),
@@ -395,13 +394,13 @@ categorical_var_summary <- function(cat_variable) {
 }
 
 is_numeric_var <- function(var) {
-  var_type <- pillar::type_sum(var)
+  var_type <- type_sum(var)
   numeric_types <- c("dbl", "int")
   if (var_type %in% numeric_types) TRUE else FALSE
 }
 
 is_cat_var <- function(var) {
-  var_type <- pillar::type_sum(var)
+  var_type <- type_sum(var)
   cat_types <- c("lgl", "chr", "fct")
   if (var_type %in% cat_types) TRUE else FALSE
 }
@@ -719,6 +718,7 @@ transf_relabel <- function(
   for (value in values) {
     new_name <- input[[str_glue("relab_{value}")]]
     if (!is.null(new_name) && new_name != "") {
+      print("[*]In expr")
       relab_expr <- expr(!!new_name := !!value)
       relab_exprs <- append(relab_exprs, relab_expr)
     } else {
