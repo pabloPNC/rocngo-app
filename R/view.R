@@ -1,5 +1,3 @@
-#' @importFrom shiny NS
-#' @importFrom DT DTOutput
 view_ui <- function(id, title) {
   ns <- NS(id)
   box(
@@ -36,7 +34,6 @@ view_ui <- function(id, title) {
   )
 }
 
-#' @importFrom shiny moduleServer
 view_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
     dataset <- reactive({
@@ -91,9 +88,6 @@ view_server <- function(id, data) {
   })
 }
 
-#' @importFrom shiny fluidPage shinyApp
-#' @importFrom shinydashboard dashboardBody
-#' @importFrom shinydashboardPlus dashboardPage dashboardHeader dashboardSidebar
 view_app <- function() {
   ui <- dashboardPage(
     header = dashboardHeader(title = NULL),
@@ -109,7 +103,6 @@ view_app <- function() {
   shinyApp(ui, server)
 }
 
-#' @importFrom shinydashboard dashboardPage dashboardHeader dashboardSidebar dashboardBody
 view_large_app <- function() {
   ui <- dashboardPage(
     header = dashboardHeader(title = NULL),
@@ -176,8 +169,6 @@ numRangeDeps <- function() {
   )
 }
 
-#' @importFrom purrr discard
-#' @importFrom stringr str_glue
 updateNumRangeInput <- function(
     session = shiny::getDefaultReactiveDomain(),
     id,

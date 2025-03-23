@@ -1,4 +1,3 @@
-#' @importFrom shiny NS tags uiOutput
 upload_ui <- function(id, title) {
   ns <- NS(id)
   shinydashboard::box(
@@ -65,8 +64,6 @@ upload_ui <- function(id, title) {
   )
 }
 
-#' @importFrom shiny moduleServer
-#' @importFrom waiter Waiter transparent
 upload_server <- function(id, data_storage) {
   moduleServer(id, function(input, output, session) {
     waiter <- Waiter$new(
@@ -99,8 +96,6 @@ upload_server <- function(id, data_storage) {
   })
 }
 
-#' @importFrom shinydashboardPlus dashboardHeader dashboardPage dashboardSidebar
-#' @importFrom shinydashboard dashboardBody
 upload_app <- function() {
   ui <- dashboardPage(
     header = dashboardHeader(title = NULL),
@@ -171,8 +166,6 @@ draw_stored_table <- function(
   )
 }
 
-#' @importFrom tools file_ext file_path_sans_ext
-#' @importFrom rlang list2
 import_datasets <- function(
     upload_dataset,
     storage,

@@ -24,7 +24,6 @@ config <- function(...) {
     options(shiny.launch.browser = FALSE)
 }
 
-#' @importFrom shiny shinyApp fluidPage
 roc_app <- function(...) {
     # DEV configuration
     config()

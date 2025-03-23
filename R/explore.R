@@ -327,7 +327,6 @@ explore_server <- function(id, selected_dataset, data_storage) {
   })
 }
 
-#' @importFrom shinydashboardPlus dashboardHeader dashboardPage dashboardSidebar
 explore_app <- function() {
   ui <- dashboardPage(
     header = dashboardHeader(title = NULL),
@@ -719,6 +718,7 @@ transf_relabel <- function(
   for (value in values) {
     new_name <- input[[str_glue("relab_{value}")]]
     if (!is.null(new_name) && new_name != "") {
+      print("[*]In expr")
       relab_expr <- expr(!!new_name := !!value)
       relab_exprs <- append(relab_exprs, relab_expr)
     } else {
