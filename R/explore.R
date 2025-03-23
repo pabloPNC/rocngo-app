@@ -94,7 +94,7 @@ explore_server <- function(id, selected_dataset, data_storage) {
     })
     var_type <- reactive({
       req(input$summary_var)
-      pillar::type_sum(temp_dataset()[[input$summary_var]])
+      type_sum(temp_dataset()[[input$summary_var]])
     })
     var_class <- reactive({
       req(var())
@@ -394,13 +394,13 @@ categorical_var_summary <- function(cat_variable) {
 }
 
 is_numeric_var <- function(var) {
-  var_type <- pillar::type_sum(var)
+  var_type <- type_sum(var)
   numeric_types <- c("dbl", "int")
   if (var_type %in% numeric_types) TRUE else FALSE
 }
 
 is_cat_var <- function(var) {
-  var_type <- pillar::type_sum(var)
+  var_type <- type_sum(var)
   cat_types <- c("lgl", "chr", "fct")
   if (var_type %in% cat_types) TRUE else FALSE
 }

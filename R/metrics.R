@@ -95,7 +95,7 @@ metrics_server <- function(id, dataset, functions, bound_func, ratio) {
         })
         auc <- shiny::reactive({
             var_type_req(input$gold_standard, input$predictor, dataset())
-            pROC::auc(
+            auc(
                 response = dataset()[[input$gold_standard]],
                 predictor = dataset()[[input$predictor]],
                 direction = "<",
@@ -111,7 +111,7 @@ metrics_server <- function(id, dataset, functions, bound_func, ratio) {
                 bounds <- c((1 - input$threshold / 100), 1)
             }
             as.double(
-                pROC::auc(
+                auc(
                     response = dataset()[[input$gold_standard]],
                     predictor = dataset()[[input$predictor]],
                     direction = "<",

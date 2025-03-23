@@ -33,4 +33,6 @@
 #' @importFrom waiter spin_1 useWaiter Waiter transparent
 #' @importFrom tools file_ext file_path_sans_ext
 #' @importFrom DT DTOutput
+#' @importFrom pROC auc
+#' @importFrom pillar type_sum
 NULL
